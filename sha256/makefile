@@ -6,3 +6,9 @@ test2:
 
 test3:
 	python sha256.py < test3.in > output && diff output test3.out
+
+test4:
+	python sha256.py < test4.in > output && diff output test4.out
+
+test5:
+	python sha256.py < test5.in > output && diff output test5.out

@@ -99,8 +99,8 @@ def sha256(b):
 		0x391c0cb3L, 0x4ed8aa4aL, 0x5b9cca4fL, 0x682e6ff3L,
 		0x748f82eeL, 0x78a5636fL, 0x84c87814L, 0x8cc70208L,
 		0x90befffaL, 0xa4506cebL, 0xbef9a3f7L, 0xc67178f2L]
-	firstPad = 0x80
-	restPad = 0x00
+	firstPad = 0x80 #10000000
+	restPad = 0x00  #00000000
 	L = len(b) * 8 #times 8 because we want number of bits not bytes
 	b.append(firstPad)
 	while (len(b) % 64) != 56: #pad until we have just enough room for the 8 byte representation of the length
@@ -112,9 +112,10 @@ def sha256(b):
 	#Now the initial vector is created.
 	#Next, the actual digest calculation.
 	w = [0]*64 #w is an array of 32-bit words (all in all w is 64*8=512 bits long)
-	for i in range(16):
-		w[i] = fourBytesToInteger(b[i*4:i*4+4])
-	current_hash = processChunk(w,current_hash,k)
+	for chunkNum in range(len(b)/64):
+		for i in range(16):
+			w[i] = fourBytesToInteger(b[chunkNum*64+i*4:chunkNum*64+i*4+4])
+		current_hash = processChunk(w,current_hash,k)
 	digest = [0]*32
 	for i in range(8):
 		digest[i*4:i*4+4] = integerToFourBytes(current_hash[i])
@@ -122,5 +123,5 @@ def sha256(b):
 
 for line in fileinput.input():
 	b = bytearray.fromhex(line.rstrip()) #read input and convert to byte array
-	#print binascii.hexlify(lib_sha256(b)) #convert returned byte array into hex and print
 	print integersToHex(sha256(b))
+	#print binascii.hexlify(lib_sha256(b)) #Use this line instead of the one above to test pythons own implementation.
