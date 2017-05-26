@@ -3,6 +3,7 @@ import binascii
 import hashlib
 import struct
 
+#Simple lookup table for integer values 0-255 to hexstrings 00-ff
 hex_lookup = [
 	"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0a", "0b", "0c", "0d", "0e", "0f",
 	"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "1a", "1b", "1c", "1d", "1e", "1f",
@@ -26,13 +27,23 @@ hex_lookup = [
 def lib_sha256(b):
 	return hashlib.sha256(b).digest()
 
+#Given an array of integers such that each element is in range [0,255]
+#this method returns the hex representation of these integers.
+#example input:  [0,10,255]
+#example output: "000aff"
 def integersToHex(bArr):
 	res = ""
 	return res.join(map(lambda x: hex_lookup[x], bArr))
 
+#Given a four size byte array returns the integer value represented by
+#the bytes if they are concatenated and read as big-endian.
 def fourBytesToInteger(bArr):
 	return bArr[0] * 256 * 256 * 256 + bArr[1] * 256 * 256 + bArr[2] * 256 + bArr[3]
 
+#Given an integer, returns an array of four values, each representing two
+#bytes from the big-endian byte representation of that number.
+#example input:  0x0a0b1a1b
+#example output: [10,11,26,27]
 def integerToFourBytes(val):
 	res = [0]*4
 	for i in range(4): #extract Length, one byte at a time, starting with lowest one
@@ -47,6 +58,10 @@ def rotateRight(val, n):
 	#The & in the end is performed to make sure we only keep the 32 lsb:s
 	return ((val >> n) | (val << (32-n))) & 0xFFFFFFFFL
 
+#Performs all operations specified in sha256 on a 512 bit chunk.
+#Takes current hash value as input and returns an updated version.
+#Also takes current chunk as an array of 32-bit words (w) and the
+#k matrix as specified in the sha256 standard.
 def processChunk(w,current_hash,k):
 	#Extend the first 16 words to the thus far empty indices 16 to 63.
 	for i in range(16,64):
@@ -78,6 +93,8 @@ def processChunk(w,current_hash,k):
 					(current_hash[6] + g) & 0xFFFFFFFFL, (current_hash[7] + h) & 0xFFFFFFFFL]
 	return current_hash
 
+#Performs sha256 on a byte array b, returning an integer
+#array containing the values of each byte in the digest.
 def sha256(b):
 	current_hash = [
 		0x6a09e667L, 0xbb67ae85L, 0x3c6ef372L, 0xa54ff53aL,
